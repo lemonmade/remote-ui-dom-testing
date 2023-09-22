@@ -66,6 +66,10 @@ export class SignalRemoteReceiver {
 
   readonly receive: RemoteMutationCallback;
 
+  get callback() {
+    return this.receive;
+  }
+
   constructor({retain, release}: RemoteReceiverOptions = {}) {
     const {attached, parents} = this;
 

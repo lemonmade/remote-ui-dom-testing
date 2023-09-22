@@ -17,6 +17,10 @@ export class DOMRemoteReceiver {
   readonly root: DocumentFragment | Element = document.createDocumentFragment();
   readonly receive: RemoteMutationCallback;
 
+  get callback() {
+    return this.receive;
+  }
+
   private readonly attached = new Map<string, Node>();
 
   constructor({retain, release}: RemoteReceiverOptions = {}) {

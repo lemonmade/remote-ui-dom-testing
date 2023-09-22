@@ -3,6 +3,10 @@ import {DOMRemoteReceiver} from '../receiver/dom.ts';
 export class RemoteReceiverElement extends HTMLElement {
   readonly receive: DOMRemoteReceiver['receive'];
 
+  get callback() {
+    return this.receive;
+  }
+
   retain?: (value: any) => void;
   release?: (value: any) => void;
 
