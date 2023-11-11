@@ -7,14 +7,16 @@ import {
 import {
   ROOT_ID,
   REMOTE_ID,
+  REMOTE_PROPERTIES,
   MUTATION_TYPE_INSERT_CHILD,
   MUTATION_TYPE_REMOVE_CHILD,
   MUTATION_TYPE_UPDATE_TEXT,
+  MUTATION_TYPE_UPDATE_PROPERTY,
 } from '../constants.ts';
 import type {RemoteMutationCallback, RemoteMutationRecord} from '../types.ts';
 
 export class RemoteMutationObserver extends MutationObserver {
-  constructor(callback: RemoteMutationCallback) {
+  constructor(private readonly callback: RemoteMutationCallback) {
     super((records) => {
       const remoteRecords: RemoteMutationRecord[] = [];
 
@@ -52,6 +54,16 @@ export class RemoteMutationObserver extends MutationObserver {
             targetId,
             record.target.textContent ?? '',
           ]);
+        } else if (
+          record.type === 'attributes' &&
+          !(REMOTE_PROPERTIES in record.target)
+        ) {
+          remoteRecords.push([
+            MUTATION_TYPE_UPDATE_PROPERTY,
+            targetId,
+            record.attributeName,
+            (record.target as Element).getAttribute(record.attributeName),
+          ]);
         }
       }
 
@@ -61,16 +73,35 @@ export class RemoteMutationObserver extends MutationObserver {
 
   observe(
     target: Node & {[REMOTE_ID]?: string},
-    options?: MutationObserverInit,
+    options?: MutationObserverInit & {
+      /**
+       * Whether to send the initial state of the tree to the mutation
+       * callback.
+       *
+       * @default true
+       */
+      initial?: boolean;
+    },
   ) {
     if (target[REMOTE_ID] == null) {
       target[REMOTE_ID] = ROOT_ID;
     }
 
+    if (options?.initial !== false) {
+      this.callback(
+        Array.from(target.childNodes, (node, index) => [
+          MUTATION_TYPE_INSERT_CHILD,
+          ROOT_ID,
+          serializeRemoteNode(node),
+          index,
+        ]),
+      );
+    }
+
     super.observe(target, {
       subtree: true,
       childList: true,
-      attributes: false,
+      attributes: true,
       characterData: true,
       ...options,
     });

@@ -6,10 +6,12 @@ import {
 } from '@remote-dom/polyfill';
 
 import {
+  REMOTE_CALLBACK,
+  REMOTE_PROPERTIES,
   MUTATION_TYPE_INSERT_CHILD,
   MUTATION_TYPE_REMOVE_CHILD,
   MUTATION_TYPE_UPDATE_TEXT,
-  REMOTE_CALLBACK,
+  MUTATION_TYPE_UPDATE_PROPERTY,
 } from './constants.ts';
 import {
   remoteId,
@@ -52,6 +54,22 @@ hooks.setText = (text, data) => {
   if (callback == null) return;
 
   callback([[MUTATION_TYPE_UPDATE_TEXT, remoteId(text), data]]);
+};
+
+hooks.setAttribute = (element, name, value) => {
+  const callback = (element as any)[REMOTE_CALLBACK];
+  const properties = (element as any)[REMOTE_PROPERTIES];
+
+  if (callback == null || properties != null) return;
+
+  callback([
+    [
+      MUTATION_TYPE_UPDATE_PROPERTY,
+      remoteId(element),
+      name,
+      value ?? undefined,
+    ],
+  ]);
 };
 
 export {hooks, window, type Hooks};
