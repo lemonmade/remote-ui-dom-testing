@@ -46,7 +46,7 @@ export class DOMRemoteReceiver {
         const oldValue = remoteProperties[property];
 
         remoteProperties[property] = value;
-        updateRemoteProperty(element, property, value);
+        updateRemoteProperty(element as Element, property, value);
 
         release?.(oldValue);
       },
